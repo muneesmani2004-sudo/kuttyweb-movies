@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KuttyWeb Movies — Tamil · Telugu · Hindi · Malayalam</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080c;
+  --surface:#0b0e15;
+  --card:#0f1320;
+  --border:#1a2030;
+  --accent:#ff3d3d;
+  --accent2:#ff6b35;
+  --gold:#f5c518;
+  --teal:#00d4aa;
+  --text:#c8d4e8;
+  --muted:#4a5568;
+  --white:#eef2ff;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:400;
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* CURSOR */
+#cur{position:fixed;width:8px;height:8px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:.1s}
+#cur-ring{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,61,61,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .08s ease-out}
+
+/* GRAIN */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.5}
+
+/* LOADER */
+.loader-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--gold));z-index:9999;animation:lb 1.6s ease-out forwards}
+@keyframes lb{0%{width:0}60%{width:80%}100%{width:100%;opacity:0}}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 36px;
+  background:rgba(6,8,12,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,61,61,.12);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;
+}
+.logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;
+  letter-spacing:1px;
+  box-shadow:0 0 20px rgba(255,61,61,.4);
+}
+.logo-text{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:3px;
+  color:var(--white);line-height:1;
+}
+.logo-text span{color:var(--accent)}
+.logo-sub{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-top:1px;
+}
+.nav-links{display:flex;gap:4px;list-style:none}
+.nav-links a{
+  color:var(--muted);text-decoration:none;
+  font-size:13px;letter-spacing:1px;text-transform:uppercase;
+  font-weight:600;padding:7px 14px;border-radius:3px;
+  transition:all .2s;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--white);background:rgba(255,255,255,.06)}
+.nav-links a.active{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-search{
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:24px;display:flex;align-items:center;gap:8px;
+  padding:7px 16px;cursor:none;transition:all .2s;
+}
+.nav-search:hover{border-color:var(--accent);background:rgba(255,61,61,.05)}
+.nav-search input{
+  background:none;border:none;outline:none;
+  color:var(--text);font-family:'Rajdhani',sans-serif;
+  font-size:13px;width:160px;cursor:none;
+}
+.nav-search input::placeholder{color:var(--muted)}
+.nav-search span{color:var(--muted);font-size:14px}
+.btn-login{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;padding:8px 20px;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:none;
+  transition:opacity .2s,transform .1s;
+  box-shadow:0 4px 16px rgba(255,61,61,.3);
+}
+.btn-login:hover{opacity:.9;transform:translateY(-1px)}
+
+/* HERO SLIDER */
+.hero{
+  position:relative;height:100vh;min-height:640px;
+  overflow:hidden;
+}
+.slide{
+  position:absolute;inset:0;opacity:0;
+  transition:opacity .8s ease;
+}
+.slide.active{opacity:1}
+.slide-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:brightness(.35) saturate(.7);
+  transform:scale(1.04);
+  animation:hzoom 10s ease-out forwards;
+}
+@keyframes hzoom{from{transform:scale(1.04)}to{transform:scale(1)}}
+.slide-gradient{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to right,rgba(6,8,12,.98) 30%,rgba(6,8,12,.5) 65%,rgba(6,8,12,.15) 100%),
+    linear-gradient(to top,rgba(6,8,12,1) 0%,transparent 50%);
+}
+.slide-scanlines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.03) 3px,rgba(0,0,0,.03) 6px);
+  pointer-events:none;
+}
+.hero-content{
+  position:relative;z-index:10;
+  height:100%;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 60px 100px;
+  max-width:680px;
+}
+.slide-lang{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:4px 12px;border-radius:2px;
+  margin-bottom:16px;width:fit-content;
+}
+.slide-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,7vw,96px);
+  line-height:.95;letter-spacing:2px;
+  color:var(--white);margin-bottom:14px;
+}
+.slide-title .sub{
+  display:block;font-size:clamp(28px,4vw,52px);
+  color:var(--accent);letter-spacing:4px;
+}
+.slide-badges{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;
+}
+.badge{
+  padding:3px 10px;border-radius:2px;
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+.badge-imdb{background:var(--gold);color:#000}
+.badge-quality{background:rgba(0,212,170,.15);color:var(--teal);border:1px solid rgba(0,212,170,.3)}
+.badge-lang{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border)}
+.badge-year{color:var(--muted);font-size:13px;font-weight:600}
+.slide-desc{
+  font-size:15px;line-height:1.7;color:rgba(200,212,232,.8);
+  margin-bottom:28px;font-weight:400;
+}
+.hero-btns{display:flex;gap:12px;align-items:center}
+.btn-play{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;padding:13px 28px;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:none;
+  box-shadow:0 6px 24px rgba(255,61,61,.35);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn-play:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,61,61,.5)}
+.btn-download{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.07);color:var(--text);
+  border:1px solid var(--border);padding:13px 24px;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:none;
+  transition:all .2s;text-decoration:none;
+}
+.btn-download:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
+.btn-list{
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--muted);cursor:none;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.btn-list:hover{border-color:var(--gold);color:var(--gold)}
+
+/* SLIDER DOTS */
+.slide-dots{
+  position:absolute;bottom:40px;right:60px;z-index:10;
+  display:flex;gap:8px;align-items:center;
+}
+.dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,.25);cursor:none;
+  transition:all .3s;
+}
+.dot.active{width:24px;border-radius:3px;background:var(--accent)}
+
+/* SLIDE THUMB STRIP */
+.thumb-strip{
+  position:absolute;bottom:0;right:0;z-index:10;
+  display:flex;flex-direction:column;gap:0;
+  width:180px;
+}
+.thumb{
+  position:relative;height:72px;overflow:hidden;cursor:none;
+  border-left:2px solid transparent;
+  transition:all .2s;
+}
+.thumb.active{border-left-color:var(--accent)}
+.thumb img{width:100%;height:100%;object-fit:cover;filter:brightness(.5);transition:filter .2s}
+.thumb.active img,.thumb:hover img{filter:brightness(.7)}
+.thumb-label{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:6px 10px;
+  background:linear-gradient(to top,rgba(0,0,0,.9),transparent);
+  font-size:11px;font-weight:600;letter-spacing:.5px;color:var(--white);
+}
+
+/* TICKER */
+.ticker-wrap{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  overflow:hidden;padding:9px 0;
+}
+.ticker{display:inline-block;animation:tick 35s linear infinite;white-space:nowrap}
+.ticker span{
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:#fff;
+  margin-right:48px;
+}
+.ticker span::before{content:'▸ '}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* LANG TABS */
+.lang-nav{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;gap:0;padding:0 36px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.lang-nav::-webkit-scrollbar{display:none}
+.lang-tab{
+  padding:14px 22px;font-size:13px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);cursor:none;border:none;background:none;
+  border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;
+  position:relative;
+}
+.lang-tab:hover{color:var(--text)}
+.lang-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.lang-tab .count{
+  display:inline-block;
+  background:rgba(255,61,61,.15);color:var(--accent);
+  font-size:9px;padding:1px 5px;border-radius:2px;
+  margin-left:6px;font-weight:700;
+}
+
+/* SECTIONS */
+.section{padding:56px 36px}
+.section.alt{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.sec-head{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:28px;
+  border-bottom:1px solid var(--border);padding-bottom:14px;
+}
+.sec-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;letter-spacing:3px;color:var(--white);
+  display:flex;align-items:center;gap:12px;
+}
+.sec-title .dot-red{
+  width:8px;height:8px;background:var(--accent);border-radius:50%;
+  box-shadow:0 0 10px var(--accent);
+}
+.sec-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.sec-more{
+  font-size:12px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--accent);text-decoration:none;font-weight:700;
+  display:flex;align-items:center;gap:5px;transition:gap .2s;
+}
+.sec-more:hover{gap:9px}
+.sec-more::after{content:'→'}
+
+/* MOVIE CARD */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:18px;
+}
+.mcard{
+  border-radius:6px;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);
+  cursor:none;transition:transform .25s,border-color .25s,box-shadow .25s;
+  aspect-ratio:2/3;position:relative;
+}
+.mcard:hover{
+  transform:translateY(-10px) scale(1.02);
+  border-color:var(--accent);
+  box-shadow:0 20px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,61,61,.2);
+}
+.mcard:hover .cover{filter:brightness(.45)}
+.mcard:hover .mcard-over{opacity:1}
+.mcard:hover .mcard-info{transform:translateY(0);opacity:1}
+.cover{
+  width:100%;height:100%;object-fit:cover;
+  display:block;filter:brightness(.8);transition:filter .3s;
+}
+.mcard-q{
+  position:absolute;top:8px;left:8px;
+  font-size:9px;font-weight:700;letter-spacing:1.5px;
+  padding:3px 8px;border-radius:2px;z-index:2;
+}
+.mcard-q.hd{background:var(--accent);color:#fff}
+.mcard-q.fhd{background:var(--teal);color:#000}
+.mcard-q.k4{background:var(--gold);color:#000}
+.mcard-rating{
+  position:absolute;top:8px;right:8px;
+  color:var(--gold);font-size:12px;font-weight:700;z-index:2;
+  display:flex;align-items:center;gap:3px;
+}
+.mcard-over{
+  position:absolute;inset:0;opacity:0;
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;z-index:3;transition:opacity .25s;
+}
+.mcard-play{
+  width:48px;height:48px;border-radius:50%;
+  border:2px solid #fff;background:rgba(255,61,61,.8);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:16px;transition:transform .2s;
+}
+.mcard-play:hover{transform:scale(1.15)}
+.mcard-dl{
+  width:36px;height:36px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.4);background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.7);font-size:13px;transition:all .2s;
+}
+.mcard-dl:hover{border-color:var(--teal);color:var(--teal)}
+.mcard-info{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:14px 12px;z-index:4;
+  background:linear-gradient(to top,rgba(6,8,12,1) 0%,transparent 100%);
+  transform:translateY(8px);opacity:0;transition:all .25s;
+}
+.mcard-title{
+  font-size:13px;font-weight:700;letter-spacing:.3px;
+  color:var(--white);margin-bottom:4px;line-height:1.2;
+}
+.mcard-meta{font-size:11px;color:var(--muted);display:flex;gap:8px}
+.mcard-lang{
+  display:inline-block;
+  background:rgba(255,61,61,.15);color:var(--accent);
+  font-size:9px;font-weight:700;letter-spacing:1px;
+  padding:1px 6px;border-radius:2px;margin-top:5px;
+}
+
+/* HORIZONTAL SCROLL */
+.hscroll-wrap{position:relative}
+.hscroll{
+  display:flex;gap:14px;
+  overflow-x:auto;padding-bottom:12px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.hscroll::-webkit-scrollbar{height:4px}
+.hscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.hscroll .mcard{flex:0 0 160px;aspect-ratio:2/3}
+
+/* GENRE BANNER */
+.genre-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:12px;
+}
+.genre-card{
+  position:relative;border-radius:6px;overflow:hidden;
+  height:90px;cursor:none;
+  border:1px solid var(--border);transition:all .2s;
+}
+.genre-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.genre-card:hover img{filter:brightness(.3)}
+.genre-card img{
+  width:100%;height:100%;object-fit:cover;
+  filter:brightness(.25) saturate(.6);transition:filter .3s;
+}
+.genre-name{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px;letter-spacing:3px;color:var(--white);
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
+}
+.genre-count{
+  position:absolute;bottom:6px;right:8px;
+  font-size:10px;color:var(--muted);letter-spacing:1px;
+}
+
+/* BANNER AD STYLE */
+.promo-banner{
+  background:linear-gradient(135deg,rgba(255,61,61,.1) 0%,rgba(255,107,53,.05) 100%);
+  border:1px solid rgba(255,61,61,.2);border-radius:6px;
+  padding:28px 36px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin:0 36px;
+}
+.promo-text h3{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;letter-spacing:3px;color:var(--white);
+  margin-bottom:6px;
+}
+.promo-text p{font-size:14px;color:var(--muted);max-width:480px}
+.promo-text span{color:var(--accent);font-weight:700}
+.btn-promo{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;padding:12px 28px;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:none;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(255,61,61,.3);
+  transition:transform .15s;
+}
+.btn-promo:hover{transform:translateY(-1px)}
+
+/* STATS */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--surface);border-top:1px solid var(--border);
+}
+.stat{
+  padding:30px 20px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none}
+.stat-n{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:42px;letter-spacing:2px;
+  line-height:1;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-l{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+
+/* FOOTER */
+footer{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:56px 56px 28px;
+}
+.footer-grid{
+  display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;
+  gap:40px;margin-bottom:48px;
+}
+.footer-brand .f-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;
+  color:var(--white);text-decoration:none;
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.footer-brand .f-logo .f-icon{
+  width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#fff;
+}
+.footer-brand p{font-size:13px;line-height:1.8;color:var(--muted);max-width:280px}
+.footer-langs{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;
+}
+.footer-langs span{
+  font-size:11px;padding:3px 8px;border-radius:2px;
+  background:rgba(255,61,61,.1);color:var(--accent);
+  border:1px solid rgba(255,61,61,.2);letter-spacing:1px;
+}
+.fcol h4{
+  font-size:11px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:18px;font-weight:700;
+}
+.fcol ul{list-style:none}
+.fcol li{margin-bottom:10px}
+.fcol a{
+  font-size:13px;color:var(--muted);text-decoration:none;
+  transition:color .2s;font-weight:500;
+}
+.fcol a:hover{color:var(--text)}
+.footer-bottom{
+  border-top:1px solid var(--border);padding-top:22px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-bottom p{font-size:12px;color:var(--muted);letter-spacing:.5px}
+.footer-tags{display:flex;gap:10px;flex-wrap:wrap}
+.footer-tags a{
+  font-size:11px;color:var(--muted);text-decoration:none;
+  padding:3px 10px;border:1px solid var(--border);border-radius:2px;
+  transition:all .2s;
+}
+.footer-tags a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* SEARCH MODAL */
+.search-modal{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(6,8,12,.97);
+  display:flex;flex-direction:column;align-items:center;
+  padding-top:120px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.search-modal.open{opacity:1;pointer-events:all}
+.s-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:24px}
+.s-input{
+  width:100%;max-width:680px;
+  background:none;border:none;border-bottom:2px solid var(--accent);
+  color:var(--white);font-family:'Bebas Neue',sans-serif;
+  font-size:54px;letter-spacing:3px;outline:none;padding-bottom:14px;
+  text-align:center;
+}
+.s-input::placeholder{color:rgba(255,255,255,.1)}
+.s-hint{margin-top:20px;font-size:12px;color:var(--muted);letter-spacing:1px}
+.s-close{
+  position:absolute;top:36px;right:40px;
+  background:none;border:none;color:var(--muted);
+  font-size:22px;cursor:none;transition:color .2s;
+}
+.s-close:hover{color:var(--white)}
+
+/* ANIMATIONS */
+@keyframes fadein{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-content>*{animation:fadein .7s both}
+.hero-content>*:nth-child(1){animation-delay:.1s}
+.hero-content>*:nth-child(2){animation-delay:.2s}
+.hero-content>*:nth-child(3){animation-delay:.3s}
+.hero-content>*:nth-child(4){animation-delay:.4s}
+.hero-content>*:nth-child(5){animation-delay:.5s}
+.hero-content>*:nth-child(6){animation-delay:.6s}
+
+/* MOBILE */
+@media(max-width:768px){
+  nav{padding:12px 16px}
+  .nav-links,.nav-search{display:none}
+  .hero-content{padding:0 20px 80px;max-width:100%}
+  .slide-title{font-size:44px}
+  .section{padding:40px 16px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .promo-banner{flex-direction:column;gap:16px;margin:0 16px}
+  .lang-nav{padding:0 16px}
+  .thumb-strip{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="loader-bar"></div>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<!-- SEARCH MODAL -->
+<div class="search-modal" id="sm">
+  <button class="s-close" onclick="closeSrch()">✕</button>
+  <p class="s-label">Search KuttyWeb Movies</p>
+  <input class="s-input" type="text" placeholder="SEARCH MOVIES..." id="si">
+  <p class="s-hint">Tamil · Telugu · Hindi · Malayalam · Kannada · English</p>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">KW</div>
+    <div>
+      <div class="logo-text">KUTTY<span>WEB</span></div>
+      <div class="logo-sub">Movies · Series · Songs</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="#">Tamil</a></li>
+    <li><a href="#">Telugu</a></li>
+    <li><a href="#">Hindi</a></li>
+    <li><a href="#">Malayalam</a></li>
+    <li><a href="#">Web Series</a></li>
+    <li><a href="#">Songs</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-search" onclick="openSrch()">
+      <span>⌕</span>
+      <input type="text" placeholder="Search movies...">
+    </div>
+    <button class="btn-login">Login</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Slide 1 -->
+  <div class="slide active" id="s0">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1800&q=80')"></div>
+    <div class="slide-gradient"></div>
+    <div class="slide-scanlines"></div>
+  </div>
+  <!-- Slide 2 -->
+  <div class="slide" id="s1">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1800&q=80')"></div>
+    <div class="slide-gradient"></div>
+    <div class="slide-scanlines"></div>
+  </div>
+  <!-- Slide 3 -->
+  <div class="slide" id="s2">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=1800&q=80')"></div>
+    <div class="slide-gradient"></div>
+    <div class="slide-scanlines"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="slide-lang">🎬 New Tamil Release</div>
+    <h1 class="slide-title" id="heroTitle">VETTAIYAN<span class="sub">HERO RETURNS</span></h1>
+    <div class="slide-badges">
+      <span class="badge badge-imdb">★ 8.4 IMDB</span>
+      <span class="badge badge-quality">4K HDR</span>
+      <span class="badge badge-quality" style="color:#f5c518;border-color:rgba(245,197,24,.3);background:rgba(245,197,24,.1)">Dolby</span>
+      <span class="badge badge-lang">Tamil</span>
+      <span class="badge badge-lang">Telugu Dub</span>
+      <span class="badge-year">2024 · 2h 47m</span>
+    </div>
+    <p class="slide-desc">A legendary cop with a dark past returns to the force to hunt down a ruthless crime syndicate — only to discover the conspiracy runs deeper than he imagined. Rajinikanth delivers a powerhouse performance.</p>
+    <div class="hero-btns">
+      <button class="btn-play">▶ Watch Now</button>
+      <a href="#" class="btn-download">⬇ Download</a>
+      <button class="btn-list">♡</button>
+    </div>
+  </div>
+
+  <!-- Thumbnail strip -->
+  <div class="thumb-strip">
+    <div class="thumb active" onclick="goSlide(0)">
+      <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=300&q=70" alt="">
+      <div class="thumb-label">Vettaiyan</div>
+    </div>
+    <div class="thumb" onclick="goSlide(1)">
+      <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&q=70" alt="">
+      <div class="thumb-label">Kalki 2898</div>
+    </div>
+    <div class="thumb" onclick="goSlide(2)">
+      <img src="https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=300&q=70" alt="">
+      <div class="thumb-label">Pushpa 2</div>
+    </div>
+  </div>
+
+  <div class="slide-dots">
+    <div class="dot active" onclick="goSlide(0)"></div>
+    <div class="dot" onclick="goSlide(1)"></div>
+    <div class="dot" onclick="goSlide(2)"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span>Vettaiyan 4K HDR</span>
+    <span>Kalki 2898 AD Tamil</span>
+    <span>Pushpa 2 Hindi</span>
+    <span>Singham Returns</span>
+    <span>Devara Part 1</span>
+    <span>Kanguva 2024</span>
+    <span>Amaran Tamil</span>
+    <span>Lucky Baskhar</span>
+    <span>Marco Malayalam</span>
+    <span>Vettaiyan 4K HDR</span>
+    <span>Kalki 2898 AD Tamil</span>
+    <span>Pushpa 2 Hindi</span>
+    <span>Singham Returns</span>
+    <span>Devara Part 1</span>
+    <span>Kanguva 2024</span>
+    <span>Amaran Tamil</span>
+    <span>Lucky Baskhar</span>
+    <span>Marco Malayalam</span>
+  </div>
+</div>
+
+<!-- LANG TABS -->
+<div class="lang-nav">
+  <button class="lang-tab active">All <span class="count">NEW</span></button>
+  <button class="lang-tab">Tamil <span class="count">48</span></button>
+  <button class="lang-tab">Telugu <span class="count">32</span></button>
+  <button class="lang-tab">Hindi <span class="count">27</span></button>
+  <button class="lang-tab">Malayalam <span class="count">19</span></button>
+  <button class="lang-tab">Kannada <span class="count">12</span></button>
+  <button class="lang-tab">English <span class="count">8</span></button>
+  <button class="lang-tab">Web Series</button>
+  <button class="lang-tab">Songs</button>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-n">50K+</div><div class="stat-l">Movies</div></div>
+  <div class="stat"><div class="stat-n">8K+</div><div class="stat-l">Tamil Films</div></div>
+  <div class="stat"><div class="stat-n">4K</div><div class="stat-l">Quality</div></div>
+  <div class="stat"><div class="stat-n">Daily</div><div class="stat-l">Updates</div></div>
+</div>
+
+<!-- NEW RELEASES -->
+<section class="section">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title"><div class="dot-red"></div>New Releases</div>
+      <div class="sec-sub">Latest movies added today</div>
+    </div>
+    <a href="#" class="sec-more">View All</a>
+  </div>
+  <div class="grid" id="newRel"></div>
+</section>
+
+<!-- PROMO BANNER -->
+<div class="promo-banner">
+  <div class="promo-text">
+    <h3>🔥 Trending This Week</h3>
+    <p>Download <span>Pushpa 2, Vettaiyan, Kalki 2898 AD</span> and more in full HD & 4K — Tamil, Telugu, Hindi dubbed versions available.</p>
+  </div>
+  <button class="btn-promo">Browse All →</button>
+</div>
+
+<!-- TRENDING TAMIL -->
+<section class="section alt">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title"><div class="dot-red"></div>Trending Tamil</div>
+      <div class="sec-sub">Most downloaded this month</div>
+    </div>
+    <a href="#" class="sec-more">All Tamil</a>
+  </div>
+  <div class="hscroll" id="tamilRow"></div>
+</section>
+
+<!-- GENRES -->
+<section class="section">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title"><div class="dot-red"></div>Browse by Genre</div>
+    </div>
+  </div>
+  <div class="genre-grid" id="genreGrid"></div>
+</section>
+
+<!-- HINDI DUBBED -->
+<section class="section alt">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title"><div class="dot-red"></div>Hindi Dubbed</div>
+      <div class="sec-sub">South Indian hits in Hindi</div>
+    </div>
+    <a href="#" class="sec-more">All Hindi Dub</a>
+  </div>
+  <div class="grid" id="hindiRow"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="f-logo"><div class="f-icon">KW</div>KUTTYWEB</a>
+      <p>Your ultimate destination for Tamil, Telugu, Hindi, Malayalam movies and songs. Free HD & 4K downloads daily.</p>
+      <div class="footer-langs">
+        <span>Tamil</span><span>Telugu</span><span>Hindi</span>
+        <span>Malayalam</span><span>Kannada</span><span>English</span>
+      </div>
+    </div>
+    <div class="fcol">
+      <h4>Movies</h4>
+      <ul>
+        <li><a href="#">Tamil Movies</a></li>
+        <li><a href="#">Telugu Movies</a></li>
+        <li><a href="#">Hindi Movies</a></li>
+        <li><a href="#">Malayalam</a></li>
+        <li><a href="#">Hollywood</a></li>
+      </ul>
+    </div>
+    <div class="fcol">
+      <h4>Quality</h4>
+      <ul>
+        <li><a href="#">4K UHD</a></li>
+        <li><a href="#">1080p HD</a></li>
+        <li><a href="#">720p HD</a></li>
+        <li><a href="#">480p</a></li>
+        <li><a href="#">DVDRip</a></li>
+      </ul>
+    </div>
+    <div class="fcol">
+      <h4>More</h4>
+      <ul>
+        <li><a href="#">Web Series</a></li>
+        <li><a href="#">Tamil Songs</a></li>
+        <li><a href="#">Ringtones</a></li>
+        <li><a href="#">Dubbed Movies</a></li>
+        <li><a href="#">Request Movie</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 KuttyWeb Movies — For demo purposes only</p>
+    <div class="footer-tags">
+      <a href="#">Tamil Movies Download</a>
+      <a href="#">Telugu New Movies</a>
+      <a href="#">Hindi Dubbed South</a>
+      <a href="#">4K Movies Free</a>
+      <a href="#">Latest 2024 Movies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Cursor
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px'},55);
+});
+
+// Search
+function openSrch(){document.getElementById('sm').classList.add('open');document.getElementById('si').focus()}
+function closeSrch(){document.getElementById('sm').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSrch()});
+
+// Lang tabs
+document.querySelectorAll('.lang-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.lang-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// Slide data
+const slides=[
+  {title:'VETTAIYAN',sub:'HERO RETURNS',lang:'New Tamil Release'},
+  {title:'KALKI 2898',sub:'AD — THE EPIC',lang:'New Telugu Release'},
+  {title:'PUSHPA 2',sub:'THE RULE',lang:'Hindi Dubbed Out Now'},
+];
+let cur_s=0,timer;
+function goSlide(i){
+  document.querySelectorAll('.slide').forEach((s,j)=>s.classList.toggle('active',j===i));
+  document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+  document.querySelectorAll('.thumb').forEach((t,j)=>t.classList.toggle('active',j===i));
+  const d=slides[i];
+  document.getElementById('heroTitle').innerHTML=d.title+'<span class="sub">'+d.sub+'</span>';
+  cur_s=i;
+}
+function autoSlide(){timer=setInterval(()=>{goSlide((cur_s+1)%3)},5000)}
+autoSlide();
+document.querySelector('.hero').addEventListener('mouseenter',()=>clearInterval(timer));
+document.querySelector('.hero').addEventListener('mouseleave',()=>autoSlide());
+
+// Movie data
+const imgs=[
+  'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400&q=75',
+  'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&q=75',
+  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=75',
+  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&q=75',
+  'https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=400&q=75',
+  'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400&q=75',
+  'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=400&q=75',
+  'https://images.unsplash.com/photo-1632516643720-e7f5d7d6ecc9?w=400&q=75',
+  'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=75',
+  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&q=75',
+];
+const movies=[
+  {t:'Vettaiyan',y:2024,r:'8.4',q:'k4',l:'Tamil',i:0},
+  {t:'Kalki 2898 AD',y:2024,r:'7.9',q:'k4',l:'Telugu',i:1},
+  {t:'Pushpa 2',y:2024,r:'8.6',q:'fhd',l:'Hindi Dub',i:2},
+  {t:'Singham Returns',y:2024,r:'6.8',q:'hd',l:'Hindi',i:3},
+  {t:'Devara Part 1',y:2024,r:'7.2',q:'fhd',l:'Telugu',i:4},
+  {t:'Kanguva',y:2024,r:'5.9',q:'fhd',l:'Tamil',i:5},
+  {t:'Amaran',y:2024,r:'8.1',q:'k4',l:'Tamil',i:6},
+  {t:'Lucky Baskhar',y:2024,r:'7.8',q:'fhd',l:'Telugu',i:7},
+  {t:'Marco',y:2024,r:'8.3',q:'fhd',l:'Malayalam',i:8},
+  {t:'The Greatest',y:2024,r:'7.5',q:'hd',l:'Tamil',i:9},
+];
+const qLabel={k4:'4K',fhd:'FHD',hd:'HD'};
+
+function mkCard(m){
+  return`<div class="mcard">
+    <img class="cover" src="${imgs[m.i]}" alt="${m.t}" loading="lazy">
+    <div class="mcard-q ${m.q}">${qLabel[m.q]}</div>
+    <div class="mcard-rating">★ ${m.r}</div>
+    <div class="mcard-over">
+      <div class="mcard-play">▶</div>
+      <div class="mcard-dl">⬇</div>
+    </div>
+    <div class="mcard-info">
+      <div class="mcard-title">${m.t}</div>
+      <div class="mcard-meta"><span>${m.y}</span></div>
+      <span class="mcard-lang">${m.l}</span>
+    </div>
+  </div>`;
+}
+
+document.getElementById('newRel').innerHTML=movies.slice(0,10).map(mkCard).join('');
+document.getElementById('tamilRow').innerHTML=movies.filter(m=>m.l==='Tamil'||m.l.includes('Tamil')).concat(movies).slice(0,8).map(mkCard).join('');
+document.getElementById('hindiRow').innerHTML=movies.slice(2,8).map(mkCard).join('');
+
+// Genres
+const genres=[
+  {n:'Action',i:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&q=60',c:'1.2K'},
+  {n:'Romance',i:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300&q=60',c:'842'},
+  {n:'Thriller',i:'https://images.unsplash.com/photo-1503095396549-807759245b35?w=300&q=60',c:'634'},
+  {n:'Comedy',i:'https://images.unsplash.com/photo-1496337589254-7e19d01cec44?w=300&q=60',c:'1.1K'},
+  {n:'Horror',i:'https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=300&q=60',c:'388'},
+  {n:'Drama',i:'https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=300&q=60',c:'2.1K'},
+  {n:'Sci-Fi',i:'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=300&q=60',c:'291'},
+  {n:'Family',i:'https://images.unsplash.com/photo-1511895426328-dc8714191011?w=300&q=60',c:'567'},
+];
+document.getElementById('genreGrid').innerHTML=genres.map(g=>`
+  <div class="genre-card">
+    <img src="${g.i}" alt="${g.n}" loading="lazy">
+    <div class="genre-name">${g.n}</div>
+    <div class="genre-count">${g.c} films</div>
+  </div>`).join('');
+</script>
+</body>
+</html>
